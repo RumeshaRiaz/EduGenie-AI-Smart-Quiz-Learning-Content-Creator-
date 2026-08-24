@@ -1,14 +1,9 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS",
-    "//": "Nixpacks installs dependencies itself. Running `npm ci` here fails: it wipes node_modules, which the builder has mounted as a cache volume (EBUSY).",
-    "buildCommand": "npm run build"
-  },
   "deploy": {
     "startCommand": "npm start",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 60,
+    "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }

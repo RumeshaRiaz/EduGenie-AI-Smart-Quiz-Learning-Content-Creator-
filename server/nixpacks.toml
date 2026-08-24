@@ -1,0 +1,7 @@
+# Build steps for Nixpacks.
+#
+# The build command lives here rather than in railway.json so there is exactly
+# one place that defines it. `npm ci` must not be used: it deletes
+# node_modules, which the builder mounts as a cache volume, and fails EBUSY.
+[phases.build]
+cmds = ["npm run build"]
