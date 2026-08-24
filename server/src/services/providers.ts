@@ -53,7 +53,7 @@ class GeminiProvider implements Provider {
   private client: GoogleGenAI | null = null;
 
   constructor(private readonly apiKey: string, model?: string) {
-    this.model = model?.trim() || 'gemini-2.5-flash';
+    this.model = model?.trim() || 'gemini-3.6-flash';
   }
 
   private getClient(): GoogleGenAI {
