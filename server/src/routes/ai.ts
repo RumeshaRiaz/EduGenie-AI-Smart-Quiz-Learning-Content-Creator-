@@ -23,7 +23,7 @@ import {
   improveQuestion,
   parseEducationalContent,
   processVoiceQuestion,
-} from '../services/anthropic.js';
+} from '../services/questions.js';
 
 export const aiRouter = Router();
 

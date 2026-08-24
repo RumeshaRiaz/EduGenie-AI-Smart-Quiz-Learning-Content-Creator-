@@ -1,16 +1,14 @@
 /**
- * Anthropic client and the prompts behind each AI endpoint.
+ * Question generation: the prompts behind each AI endpoint.
  *
- * The API key lives here, on the server, and is read from the environment. It
- * is never sent to the mobile app.
+ * The API key lives on the server, read from the environment, and is never
+ * sent to the mobile app. Which vendor answers is decided in `providers.ts`.
  *
- * Structured output is enforced with `output_config.format`, so the model's
- * response is constrained to our JSON schema. Every response is still parsed
- * with Zod afterwards — schema-constrained generation makes malformed output
+ * Responses are constrained to our JSON schema by the provider, then parsed
+ * with Zod anyway — schema-constrained generation makes malformed output
  * unlikely, not impossible.
  */
 
-import Anthropic from '@anthropic-ai/sdk';
 import {
   aiQuestionSchema,
   explanationJsonSchema,
@@ -21,40 +19,12 @@ import {
 } from '../schemas.js';
 import { z } from 'zod';
 
-const MODEL = process.env.ANTHROPIC_MODEL?.trim() || 'claude-opus-5';
+import {
+  AIServiceError,
+  getProvider,
+} from './providers.js';
 
-/** Question generation is short-form; this is ample and bounds cost. */
-const MAX_TOKENS = 4096;
-
-/** Thrown when the AI layer cannot produce a usable result. */
-export class AIServiceError extends Error {
-  readonly status: number;
-
-  constructor(message: string, status = 502) {
-    super(message);
-    this.name = 'AIServiceError';
-    this.status = status;
-  }
-}
-
-let client: Anthropic | null = null;
-
-/** Lazily constructs the client so the server can boot without a key set. */
-function getClient(): Anthropic {
-  const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
-  if (!apiKey) {
-    throw new AIServiceError(
-      'The server has no ANTHROPIC_API_KEY configured.',
-      503,
-    );
-  }
-  if (!client) client = new Anthropic({ apiKey });
-  return client;
-}
-
-export function isConfigured(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY?.trim());
-}
+export { AIServiceError, isConfigured, describeProvider } from './providers.js';
 
 const SYSTEM_PROMPT = `You are an assistant for EduGenie AI, used by teachers, tutors and parents to write questions for school-age children.
 
@@ -80,51 +50,19 @@ async function generateStructured<T>(
   jsonSchema: object,
   schema: z.ZodType<T>,
 ): Promise<T> {
-  let response: Anthropic.Message;
-  try {
-    response = await getClient().messages.create({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
-      output_config: {
-        format: {
-          type: 'json_schema',
-          schema: jsonSchema as Record<string, unknown>,
-        },
-      },
-      messages: [{ role: 'user', content: instruction }],
-    });
-  } catch (error) {
-    if (error instanceof AIServiceError) throw error;
-    if (error instanceof Anthropic.RateLimitError) {
-      throw new AIServiceError('The AI service is rate limited.', 429);
-    }
-    if (error instanceof Anthropic.AuthenticationError) {
-      throw new AIServiceError('The AI API key was rejected.', 502);
-    }
-    if (error instanceof Anthropic.APIError) {
-      throw new AIServiceError(`The AI service failed: ${error.message}`);
-    }
-    throw new AIServiceError('Could not reach the AI service.');
-  }
-
-  // A safety decline arrives as HTTP 200 with stop_reason "refusal".
-  if (response.stop_reason === 'refusal') {
+  const provider = getProvider();
+  if (!provider) {
     throw new AIServiceError(
-      'The AI declined this request. Try rephrasing the content.',
-      422,
+      'The server has no AI API key configured. Set GEMINI_API_KEY or ANTHROPIC_API_KEY.',
+      503,
     );
   }
 
-  const text = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-    .map((block) => block.text)
-    .join('')
-    .trim();
-
-  if (!text) {
-    throw new AIServiceError('The AI returned an empty response.');
-  }
+  const text = await provider.generateStructured(
+    SYSTEM_PROMPT,
+    instruction,
+    jsonSchema,
+  );
 
   let parsed: unknown;
   try {

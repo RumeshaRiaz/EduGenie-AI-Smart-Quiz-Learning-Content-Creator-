@@ -15,7 +15,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { aiRouter } from './routes/ai.js';
 import { filesRouter } from './routes/files.js';
-import { isConfigured } from './services/anthropic.js';
+import { describeProvider, isConfigured } from './services/questions.js';
 
 const app = express();
 const port = Number(process.env.PORT ?? 8787);
@@ -49,13 +49,15 @@ const aiLimiter = rateLimit({
   },
 });
 
-/** Liveness plus whether the AI key is present, for the app to check setup. */
+/** Liveness plus which AI provider is active, so setup can be verified. */
 app.get('/health', (_req, res) => {
+  const ai = describeProvider();
   res.json({
     data: {
       status: 'ok',
-      aiConfigured: isConfigured(),
-      model: process.env.ANTHROPIC_MODEL?.trim() || 'claude-opus-5',
+      aiConfigured: ai.configured,
+      provider: ai.provider,
+      model: ai.model,
     },
   });
 });
@@ -71,9 +73,13 @@ app.use((_req, res) => {
 // in from outside the container, and a phone on the LAN needs the same.
 app.listen(port, '0.0.0.0', () => {
   console.log(`EduGenie API listening on port ${port}`);
+  const ai = describeProvider();
+  if (ai.configured) {
+    console.log(`AI provider: ${ai.provider} (${ai.model})`);
+  }
   if (!isConfigured()) {
     console.warn(
-      'WARNING: ANTHROPIC_API_KEY is not set. AI endpoints will return 503 until it is.',
+      'WARNING: no AI key set (GEMINI_API_KEY or ANTHROPIC_API_KEY). AI endpoints will return 503 until one is.',
     );
   }
 });
