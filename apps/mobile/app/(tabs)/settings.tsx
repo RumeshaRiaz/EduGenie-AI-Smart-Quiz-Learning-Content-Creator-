@@ -40,7 +40,9 @@ export default function SettingsScreen() {
   const questions = useLibraryStore((state) => state.questions);
   const quizzes = useLibraryStore((state) => state.quizzes);
 
-  const [backendUrl, setBackendUrl] = useState(getBackendUrl());
+  const [backendUrl, setBackendUrl] = useState(
+    preferences.backendUrlOverride || getBackendUrl(),
+  );
   // Bumped after saving so the mode badge re-reads the module-level config.
   const [modeToken, setModeToken] = useState(0);
   const mode = getAIMode();
@@ -55,6 +57,8 @@ export default function SettingsScreen() {
       return;
     }
     setBackendUrlOverride(trimmed || null);
+    // Persist it, so the choice survives restarting the app.
+    setPreferences({ backendUrlOverride: trimmed });
     setModeToken((token) => token + 1);
     Alert.alert(
       'Saved',
@@ -81,8 +85,8 @@ export default function SettingsScreen() {
 
         <Text variant="caption" color={colors.textMuted} style={styles.para}>
           {mode === 'backend'
-            ? 'AI requests go to your EduGenie backend, which holds the provider API key. No key is stored in this app.'
-            : 'No backend is configured, so AI actions use a built-in rule-based formatter. It is not a language model — it handles arithmetic and formatting only. Add your backend URL below to enable real AI.'}
+            ? 'AI requests go to the EduGenie backend, which holds the provider API key. No key is stored in this app.'
+            : 'No backend is configured, so AI actions use a built-in rule-based formatter. It is not a language model — it handles arithmetic and formatting only. Add a backend URL below to enable real AI.'}
         </Text>
 
         <Input
@@ -93,7 +97,7 @@ export default function SettingsScreen() {
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="url"
-          hint="Set EXPO_PUBLIC_API_URL to make this the default on every launch."
+          hint="Released builds already include a backend URL. Change this only to point at a different server."
         />
         <Button
           label="Save backend URL"

@@ -21,6 +21,7 @@ import {
   type QuizDraft,
 } from '../types/domain';
 import { createId } from '../utils/id';
+import { setBackendUrlOverride } from '../services/ai/config';
 
 export interface LibraryState {
   questions: Question[];
@@ -177,8 +178,11 @@ export const useLibraryStore = create<LibraryState>()(
         preferences,
       }),
       onRehydrateStorage: () => (state) => {
+        // The AI client reads its URL from a module-level value, so a saved
+        // override has to be re-applied once storage comes back.
+        const saved = state?.preferences.backendUrlOverride?.trim();
+        setBackendUrlOverride(saved ? saved : null);
         useLibraryStore.setState({ hydrated: true });
-        void state;
       },
     },
   ),

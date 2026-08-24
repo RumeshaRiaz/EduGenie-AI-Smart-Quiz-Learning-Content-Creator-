@@ -198,6 +198,12 @@ export interface Preferences {
   defaultQuestionType: QuestionType;
   /** BCP-47 tag used by the speech recogniser. */
   voiceLocale: string;
+  /**
+   * Backend URL entered in Settings, overriding the one baked in at build
+   * time. Empty in a normal install: released builds carry their own URL, so
+   * this exists for development and for pointing at a different server.
+   */
+  backendUrlOverride: string;
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -205,4 +211,5 @@ export const DEFAULT_PREFERENCES: Preferences = {
   defaultDifficulty: 'easy',
   defaultQuestionType: 'multiple_choice',
   voiceLocale: 'en-US',
+  backendUrlOverride: '',
 };

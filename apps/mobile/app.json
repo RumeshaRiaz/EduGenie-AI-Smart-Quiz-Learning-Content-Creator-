@@ -23,7 +23,9 @@
         "backgroundColor": "#4F46E5"
       },
       "package": "com.edugenie.ai",
-      "permissions": ["android.permission.RECORD_AUDIO"]
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -45,9 +47,17 @@
         {
           "microphonePermission": "EduGenie AI uses the microphone so you can create questions by speaking them.",
           "speechRecognitionPermission": "EduGenie AI converts your speech to text so it can turn what you say into a question.",
-          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b5b9afd1-fcf8-4399-87db-604ae8cbeb84"
+      }
+    }
   }
 }
