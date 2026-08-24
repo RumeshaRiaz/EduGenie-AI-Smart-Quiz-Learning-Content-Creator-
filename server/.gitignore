@@ -1,0 +1,7 @@
+node_modules/
+dist/
+
+# Secrets: never commit these. Only .env.example (with placeholders) is tracked.
+.env
+.env.*
+!.env.example

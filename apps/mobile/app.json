@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "EduGenie AI",
+    "slug": "edugenie-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "edugenie",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.edugenie.ai",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "EduGenie AI uses the microphone so you can create questions by speaking them.",
+        "NSSpeechRecognitionUsageDescription": "EduGenie AI converts your speech to text so it can turn what you say into a question."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundColor": "#4F46E5"
+      },
+      "package": "com.edugenie.ai",
+      "permissions": ["android.permission.RECORD_AUDIO"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#4F46E5"
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "EduGenie AI uses the microphone so you can create questions by speaking them.",
+          "speechRecognitionPermission": "EduGenie AI converts your speech to text so it can turn what you say into a question.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]
+    ]
+  }
+}
